@@ -180,11 +180,12 @@
 
         <!-- Moved here: Brand Image -->
         <ImageView
+            android:layout_marginTop="80dp"
             android:id="@+id/imageBrand"
-            android:layout_width="100dp"
-            android:layout_height="37dp"
+            android:layout_width="136dp"
+            android:layout_height="44dp"
             android:layout_gravity="center"
-            app:srcCompat="@drawable/logocopy2" />
+            app:srcCompat="@drawable/logo2_png" />
 
     </LinearLayout>
 

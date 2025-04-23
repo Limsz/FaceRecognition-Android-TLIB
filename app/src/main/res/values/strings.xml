@@ -2,6 +2,7 @@
     <string name="app_name">FaceRecognition</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="settings">Settings</string>
+    <string name="Registered">Registered Persons</string>
 
     <!-- Preference Titles -->
     <string name="camera">Camera</string>

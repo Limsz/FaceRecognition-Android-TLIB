@@ -17,7 +17,8 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="#FFFF">
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardFace"
@@ -42,6 +43,7 @@
 
             <TextView
                 android:id="@+id/textName"
+                android:textColor="@color/md_theme_light_scrim"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginLeft="10dp"
@@ -55,10 +57,11 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginRight="12dp"
-                android:background="@color/background1"
+                android:background="@color/md_theme_light_error"
                 app:srcCompat="@drawable/ic_delete"
                 android:layout_centerInParent="true"
                 android:layout_alignParentRight="true"
+
                 />
         </RelativeLayout>
 
