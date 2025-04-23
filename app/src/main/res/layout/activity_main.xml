@@ -7,14 +7,29 @@
     android:background="#FFFFFF"
     tools:context=".MainActivity">
 
+    <!-- Top-right Settings Icon -->
+    <ImageButton
+        android:id="@+id/buttonSettings"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Settings"
+        android:src="@drawable/ic_settings"
+        android:tint="#0061AE"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
     <!-- Rectangular Photo -->
     <ImageView
         android:id="@+id/imageTitle"
-        android:layout_width="312dp"
-        android:layout_height="42dp"
+        android:layout_width="335dp"
+        android:layout_height="64dp"
         android:layout_marginTop="16dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/images"
+        android:src="@drawable/tech1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -68,13 +83,9 @@
             android:layout_height="40dp"
             android:layout_marginEnd="10dp"
             android:layout_weight="0.5"
-            android:backgroundTint="#0818A8"
+            android:backgroundTint="#0061AE"
             android:text="Enroll"
             app:icon="@drawable/ic_register" />
-
-
-
-
     </LinearLayout>
 
     <!-- Button Row 2 -->
@@ -89,25 +100,14 @@
         app:layout_constraintTop_toBottomOf="@id/lytButtons1">
 
         <Button
-            android:id="@+id/buttonSettings"
-            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="0.5"
-            android:layout_marginEnd="10dp"
-            android:text="Settings"
-            android:backgroundTint="#0818A8"
-            app:icon="@drawable/ic_settings" />
-
-        <Button
             android:id="@+id/buttonAbout"
             style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_width="402dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp"
             android:layout_weight="0.5"
-            android:layout_marginStart="10dp"
             android:text="Registered"
-            android:backgroundTint="#0818A8"
+            android:backgroundTint="#0061AE"
             app:icon="@drawable/ic_about" />
     </LinearLayout>
 
