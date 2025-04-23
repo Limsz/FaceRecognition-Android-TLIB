@@ -1,164 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
     tools:context=".MainActivity">
 
-    <!-- Top-right Settings Icon -->
-    <ImageButton
-        android:id="@+id/buttonSettings"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="Settings"
-        android:src="@drawable/ic_settings"
-        android:tint="#0061AE"
+    <!-- Blue Header Background -->
+    <View
+        android:id="@+id/header"
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        android:background="#0061AE"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-
-    <!-- Rectangular Photo -->
-    <ImageView
-        android:id="@+id/imageTitle"
-        android:layout_width="335dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="16dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/tech1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Camera Preview -->
-    <io.fotoapparat.view.CameraView
-        android:id="@+id/preview"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/imageTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Face Overlay -->
-    <com.kbyai.facerecognition.FaceView
-        android:id="@+id/faceView"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:translationZ="1dp"
-        app:layout_constraintTop_toBottomOf="@id/imageTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- SDK Info Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardBrand"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:cardCornerRadius="8dp"
-        app:layout_constraintTop_toBottomOf="@id/preview"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Button Row 1 -->
-    <LinearLayout
-        android:id="@+id/lytButtons1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/cardBrand">
-
-        <Button
-            android:id="@+id/buttonEnroll"
-            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
-            android:layout_width="402dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="10dp"
-            android:layout_weight="0.5"
-            android:backgroundTint="#0061AE"
-            android:text="Enroll"
-            app:icon="@drawable/ic_register" />
-    </LinearLayout>
-
-    <!-- Button Row 2 -->
-    <LinearLayout
-        android:id="@+id/lytButtons2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/lytButtons1">
-
-        <Button
-            android:id="@+id/buttonAbout"
-            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
-            android:layout_width="402dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="10dp"
-            android:layout_weight="0.5"
-            android:text="Registered"
-            android:backgroundTint="#0061AE"
-            app:icon="@drawable/ic_about" />
-    </LinearLayout>
-
-    <!-- People List -->
-    <ListView
-        android:id="@+id/listPerson"
-        android:layout_width="4dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:divider="@null"
-        android:dividerHeight="0dp"
-        app:layout_constraintBottom_toTopOf="@id/lytBrand"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lytButtons2"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <!-- Warning Banner -->
+    <!-- Title Text in Header -->
     <TextView
-        android:id="@+id/textWarning"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:background="@color/md_theme_light_error"
-        android:text=""
-        android:visibility="gone"
-        android:textSize="14sp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toTopOf="@id/listPerson"
-        app:layout_constraintBottom_toBottomOf="@id/listPerson"
-        app:layout_constraintStart_toStartOf="@id/listPerson"
-        app:layout_constraintEnd_toEndOf="@id/listPerson" />
-
-    <!-- Brand Footer -->
-    <LinearLayout
-        android:id="@+id/lytBrand"
+        android:id="@+id/txtTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:gravity="center"
+        android:text="Face Recognition"
+        android:textColor="#FFFFFF"
+        android:textSize="35sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="@id/header"
+        app:layout_constraintVertical_bias="0.3" />
 
+    <!-- Optional: Gear Icon for Settings -->
+    <ImageView
+        android:id="@+id/gearIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:contentDescription="Settings"
+        android:src="@drawable/ic_settings"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp" />
+
+    <!-- Overlapping White Rounded Content Panel -->
+    <LinearLayout
+        android:id="@+id/whitePanel"
+        android:layout_width="418dp"
+        android:layout_height="630dp"
+        android:background="@drawable/rounded_top_white"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:translationY="100dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/header">
+
+        <!-- Rectangular Photo -->
+        <ImageView
+            android:id="@+id/imageTitle"
+            android:layout_width="335dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/tech1" />
+
+        <!-- Camera Preview -->
+        <io.fotoapparat.view.CameraView
+            android:id="@+id/preview"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp">
+
+            <com.kbyai.facerecognition.FaceView
+                android:id="@+id/faceView"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:translationZ="1dp" />
+        </io.fotoapparat.view.CameraView>
+
+        <!-- SDK Info Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardBrand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="8dp" />
+
+        <!-- Button Row 1 -->
+        <LinearLayout
+            android:id="@+id/lytButtons1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/buttonEnroll"
+                style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="0.5"
+                android:backgroundTint="#0061AE"
+                android:text="Enroll"
+                app:icon="@drawable/ic_register" />
+        </LinearLayout>
+
+        <!-- Button Row 2 -->
+        <LinearLayout
+            android:id="@+id/lytButtons2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/buttonSettings"
+                style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="0.5"
+                android:backgroundTint="#0818A8"
+                android:text="Settings"
+                app:icon="@drawable/ic_settings" />
+
+            <Button
+                android:id="@+id/buttonAbout"
+                style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
+                android:layout_weight="0.5"
+                android:backgroundTint="#0818A8"
+                android:text="Registered"
+                app:icon="@drawable/ic_about" />
+        </LinearLayout>
+
+        <!-- People List -->
+        <ListView
+            android:id="@+id/listPerson"
+            android:layout_width="16dp"
+            android:layout_height="22dp"
+            android:layout_marginTop="16dp"
+            android:divider="@null"
+            android:dividerHeight="0dp" />
+
+        <!-- Warning Banner -->
+        <TextView
+            android:id="@+id/textWarning"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@color/md_theme_light_error"
+            android:gravity="center"
+            android:text=""
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <!-- Brand Footer -->
+        <LinearLayout
+            android:id="@+id/lytBrand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal" />
+
+        <!-- Moved here: Brand Image -->
         <ImageView
             android:id="@+id/imageBrand"
             android:layout_width="100dp"
-            android:layout_height="25dp"
+            android:layout_height="37dp"
+            android:layout_gravity="center"
             app:srcCompat="@drawable/logocopy2" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
