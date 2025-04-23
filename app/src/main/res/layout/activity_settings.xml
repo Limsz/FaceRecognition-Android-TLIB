@@ -1,22 +1,82 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"> <!-- Light background -->
+    >
+
+
+
+    <View
+        android:id="@+id/header"
+        android:layout_width="0dp"
+        android:layout_height="180dp"
+        android:background="#0061AE"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/gearIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+
+        android:contentDescription="Settings"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp" />
+
+    <!-- Overlapping White Content Panel -->
+
+    <LinearLayout
+        android:id="@+id/whitePanel"
+        android:layout_marginBottom="100dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_top_white"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:translationY="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/header"
+        app:layout_constraintVertical_bias="1.0">
+
+        <!-- Title TextView -->
+
+        <!-- Settings Container -->
+
+        <FrameLayout
+            android:id="@+id/settings"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:src="@drawable/logo2_png" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/txtTitle"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_width="339dp"
+        android:layout_height="50dp"
         android:gravity="center"
         android:text="@string/settings"
-        android:textColor="#0818A8"
-    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-    android:layout_marginTop="16dp">
-</TextView>
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="#FFFF"
+        android:textSize="35dp"
 
-<FrameLayout
-android:id="@+id/settings"
-android:layout_width="match_parent"
-android:layout_height="match_parent" />
-    </LinearLayout>
+        app:layout_constraintBottom_toBottomOf="@+id/header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/header"
+        app:layout_constraintVertical_bias="0.307" />
+</androidx.constraintlayout.widget.ConstraintLayout>
