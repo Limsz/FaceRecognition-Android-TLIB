@@ -54,15 +54,19 @@
 
             <ImageButton
                 android:id="@+id/buttonDelete"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginRight="12dp"
-                android:background="@color/md_theme_light_error"
-                app:srcCompat="@drawable/ic_delete"
-                android:layout_centerInParent="true"
+                android:layout_width="23dp"
+                android:layout_height="25dp"
+                android:layout_alignParentTop="true"
                 android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="24dp"
 
-                />
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="23dp"
+                android:background="@color/md_theme_light_onTertiary"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/bin3" />
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>
