@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Size
 import android.view.View
@@ -78,8 +79,15 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(Intent.createChooser(intent, getString(R.string.select_picture)), SELECT_PHOTO_REQUEST_CODE)
         }
+        val settingsButton = findViewById<ImageButton>(R.id.gearIcon)
 
-        findViewById<Button>(R.id.buttonSettings).setOnClickListener {
+// Set background color to blue
+        settingsButton.setBackgroundColor(Color.parseColor("#0061AE"))
+
+// Tint the gear icon to white
+        settingsButton.setColorFilter(ContextCompat.getColor(this, android.R.color.white))
+
+        findViewById<ImageButton>(R.id.gearIcon).setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
