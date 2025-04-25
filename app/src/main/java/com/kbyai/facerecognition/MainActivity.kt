@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var personAdapter: PersonAdapter
     private lateinit var textWarning: TextView
     private lateinit var textViewIdentifiedName: TextView
+    private lateinit var textTimestamp: TextView
+
 
     @Volatile private var recognized = false
     private var lastIdentifiedName: String? = null
@@ -55,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         textWarning = findViewById(R.id.textWarning)
         val listView: ListView = findViewById(R.id.listPerson)
         textViewIdentifiedName = findViewById(R.id.textViewIdentifiedName)
+        textTimestamp = findViewById(R.id.textTimestamp)
+
 
         var ret = FaceSDK.setActivation("S18+rOL1H3BXjAWGP7gEdgbJVotQ4g1o+YMcZruzEaKWFUQJHB2P1ylgw1FAfi+enDQA3nE4E9h6\n" +
                 "NF6xL8uRrs33P9vekwdJCBLlIPcx+keHdNiFjq/3848TZjgMeJ3Xpvh1grWIh9kdGbEfnh6x0/xI\n" +
@@ -281,12 +285,17 @@ class MainActivity : AppCompatActivity() {
 
                     if (highestSimilarity > SettingsActivity.getIdentifyThreshold(context)) {
                         recognized = true
-
+                        val timestamp = java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss a", java.util.Locale.getDefault())
+                            .format(java.util.Date())
                         runOnUiThread {
                             textViewIdentifiedName.text = "Identified: ${bestMatch!!.name}"
 
+                            textTimestamp.text = timestamp
+                            textTimestamp.visibility = View.VISIBLE
+
                             Handler(mainLooper).postDelayed({
                                 textViewIdentifiedName.text = "Identified: Unknown"
+                                textTimestamp.text = "0000-00-00 00:00:00 AM/PM"
                                 fotoapparat.start()
                                 recognized = false
                             }, 3000)
