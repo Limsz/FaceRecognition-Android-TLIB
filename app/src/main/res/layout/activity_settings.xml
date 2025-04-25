@@ -12,7 +12,7 @@
         android:id="@+id/header"
         android:layout_width="0dp"
         android:layout_height="180dp"
-        android:background="#0061AE"
+        android:background="#4293D3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,7 +32,7 @@
 
     <LinearLayout
         android:id="@+id/whitePanel"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="70dp"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/rounded_top_white"

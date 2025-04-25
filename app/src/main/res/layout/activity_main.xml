@@ -14,7 +14,7 @@
         android:id="@+id/header"
         android:layout_width="424dp"
         android:layout_height="173dp"
-        android:background="#0061AE"
+        android:background="#4293D3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,23 +48,27 @@
         android:scaleType="fitCenter"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="#0061AE"
+        android:background="#4293D3"
         android:layout_margin="16dp"
         android:tint="@android:color/white" />
 
     <!-- Overlapping White Rounded Content Panel -->
     <LinearLayout
         android:id="@+id/whitePanel"
-        android:layout_width="404dp"
-        android:layout_height="700dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="70dp"
         android:background="@drawable/rounded_top_white"
         android:elevation="8dp"
         android:orientation="vertical"
-        android:padding="30dp"
+        android:padding="16dp"
         android:translationY="70dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/header">
+        app:layout_constraintTop_toTopOf="@id/header"
+        app:layout_constraintVertical_bias="1.0">
 
         <!-- Rectangular Photo -->
         <ImageView
@@ -141,35 +145,6 @@
                 android:orientation="vertical">
 
                 <ImageButton
-                    android:id="@+id/buttonCapture"
-                    android:layout_width="104dp"
-                    android:layout_height="47dp"
-                    android:layout_margin="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="@android:color/white"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/camera3" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/alata"
-                    android:text="Capture"
-                    android:textAlignment="center"
-                    android:textColor="#0061AE"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageButton
                     android:id="@+id/buttonEnroll"
                     android:layout_width="51dp"
                     android:layout_height="46dp"
@@ -185,6 +160,35 @@
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/alata"
                     android:text="Upload Photo"
+                    android:textAlignment="center"
+                    android:textColor="#0061AE"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/buttonCapture"
+                    android:layout_width="104dp"
+                    android:layout_height="47dp"
+                    android:layout_margin="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@android:color/white"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/camera3" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/alata"
+                    android:text="Capture"
                     android:textAlignment="center"
                     android:textColor="#0061AE"
                     android:textSize="12sp"
@@ -227,7 +231,7 @@
             android:layout_width="136dp"
             android:layout_height="44dp"
             android:layout_gravity="center"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="120dp"
             app:srcCompat="@drawable/logo2_png" />
 
         <!-- People List -->
