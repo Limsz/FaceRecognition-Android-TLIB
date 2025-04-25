@@ -79,6 +79,7 @@ public class Utils {
                     srcBitmap.getHeight(), matrix, true);
         }
 
+
         return srcBitmap;
     }
 }

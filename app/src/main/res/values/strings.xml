@@ -9,6 +9,9 @@
     <string name="thresholds">Thresholds</string>
     <string name="reset">Reset</string>
 
+    <string name="identify_unknown">Unknown</string>
+
+
     <!-- Messages Preferences -->
     <string name="camera_lens">Camera lens</string>
     <string name="liveness_threshold">Liveness threshold</string>

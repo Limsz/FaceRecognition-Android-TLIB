@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.util.Size
 import android.view.View
 import android.widget.*
@@ -20,6 +20,7 @@ import io.fotoapparat.Fotoapparat
 import io.fotoapparat.parameter.Resolution
 import io.fotoapparat.preview.Frame
 import io.fotoapparat.preview.FrameProcessor
+
 import io.fotoapparat.selector.front
 import io.fotoapparat.selector.back
 import io.fotoapparat.view.CameraView
@@ -30,8 +31,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val SELECT_PHOTO_REQUEST_CODE = 1
         private const val CAMERA_PERMISSION_REQUEST_CODE = 100
-        private const val CAMERA_MODE_FRONT = 7
-        private const val CAMERA_MODE_BACK = 6
     }
 
     private lateinit var cameraView: CameraView
@@ -41,20 +40,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dbManager: DBManager
     private lateinit var personAdapter: PersonAdapter
     private lateinit var textWarning: TextView
+    private lateinit var textViewIdentifiedName: TextView
+
     @Volatile private var recognized = false
+    private var lastIdentifiedName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         context = this
 
-        // Setup views
         cameraView = findViewById(R.id.preview)
         faceView = findViewById(R.id.faceView)
         textWarning = findViewById(R.id.textWarning)
         val listView: ListView = findViewById(R.id.listPerson)
+        textViewIdentifiedName = findViewById(R.id.textViewIdentifiedName)
 
-        // Setup SDK
         var ret = FaceSDK.setActivation("S18+rOL1H3BXjAWGP7gEdgbJVotQ4g1o+YMcZruzEaKWFUQJHB2P1ylgw1FAfi+enDQA3nE4E9h6\n" +
                 "NF6xL8uRrs33P9vekwdJCBLlIPcx+keHdNiFjq/3848TZjgMeJ3Xpvh1grWIh9kdGbEfnh6x0/xI\n" +
                 "eCRCuxDn3Za5bRneYyKuUnmt2DGUx9ipZXZawZRT1kob9WxqABMMymYvCFpJMn6XVTZoRU2kRBxM\n" +
@@ -63,36 +64,33 @@ class MainActivity : AppCompatActivity() {
         if (ret == FaceSDK.SDK_SUCCESS) ret = FaceSDK.init(assets)
         if (ret != FaceSDK.SDK_SUCCESS) showSdkError(ret)
 
-        // Setup database
+
         dbManager = DBManager(this)
         dbManager.loadPerson()
 
-        // Setup person list
         personAdapter = PersonAdapter(this, DBManager.personList)
         listView.adapter = personAdapter
 
-        // Setup camera
         setupCamera()
 
-        // Buttons
-        findViewById<Button>(R.id.buttonEnroll).setOnClickListener {
+        findViewById<ImageButton>(R.id.buttonEnroll).setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(Intent.createChooser(intent, getString(R.string.select_picture)), SELECT_PHOTO_REQUEST_CODE)
         }
-        val settingsButton = findViewById<ImageButton>(R.id.gearIcon)
 
-// Set background color to blue
-        settingsButton.setBackgroundColor(Color.parseColor("#0061AE"))
-
-// Tint the gear icon to white
-        settingsButton.setColorFilter(ContextCompat.getColor(this, android.R.color.white))
-
-        findViewById<ImageButton>(R.id.gearIcon).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+        findViewById<ImageButton>(R.id.buttonSetting).setOnClickListener {
+            // Open the SettingsActivity or show a dialog
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
         }
 
-        findViewById<Button>(R.id.buttonAbout).setOnClickListener {
+
+        findViewById<ImageButton>(R.id.buttonAbout).setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
+        }
+
+        findViewById<ImageButton>(R.id.buttonCapture).setOnClickListener {
+            captureAndSaveFace()
         }
     }
 
@@ -112,57 +110,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        recognized = false
-        personAdapter.notifyDataSetChanged()
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            fotoapparat.start()
-        }
-    }
+    private fun captureAndSaveFace() {
+        fotoapparat.takePicture().toBitmap().whenAvailable { photo ->
+            if (photo == null) {
+                toast("Capture failed")
+                return@whenAvailable
+            }
 
-    override fun onPause() {
-        super.onPause()
-        fotoapparat.stop()
-        faceView.setFaceBoxes(null)
-    }
+            var bitmap = photo.bitmap
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
-            fotoapparat.start()
-        }
-    }
+            // Apply rotation to tilt the image to the right
+            val matrix = android.graphics.Matrix()
+            matrix.postRotate(240f)  // Rotate by 90 degrees (right tilt)
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == SELECT_PHOTO_REQUEST_CODE && resultCode == RESULT_OK) {
-            data?.data?.let { uri ->
-                try {
-                    val bitmap = Utils.getCorrectlyOrientedImage(this, uri)
-                    val param = FaceDetectionParam().apply {
-                        check_liveness = true
-                        check_liveness_level = SettingsActivity.getLivenessLevel(this@MainActivity)
-                    }
+            val param = FaceDetectionParam().apply {
+                check_liveness = true
+                check_liveness_level = SettingsActivity.getLivenessLevel(this@MainActivity)
+            }
 
-                    val faceBoxes = FaceSDK.faceDetection(bitmap, param)
+            val faceBoxes = FaceSDK.faceDetection(bitmap, param)
 
-                    when {
-                        faceBoxes.isNullOrEmpty() -> toast(getString(R.string.no_face_detected))
-                        faceBoxes.size > 1 -> toast(getString(R.string.multiple_face_detected))
-                        else -> {
-                            val faceBox = faceBoxes[0]
-                            val faceImage = Utils.cropFace(bitmap, faceBox)
-                            val templates = FaceSDK.templateExtraction(bitmap, faceBox)
+            when {
+                faceBoxes.isNullOrEmpty() -> toast(getString(R.string.no_face_detected))
+                faceBoxes.size > 1 -> toast(getString(R.string.multiple_face_detected))
+                else -> {
+                    val faceBox = faceBoxes[0]
+                    val faceImage = Utils.cropFace(bitmap, faceBox)
+                    val templates = FaceSDK.templateExtraction(bitmap, faceBox)
 
-                            promptName { name ->
-                                dbManager.insertPerson(name, faceImage, templates)
-                                personAdapter.notifyDataSetChanged()
-                                toast(getString(R.string.person_enrolled))
-                            }
+                    val threshold = SettingsActivity.getIdentifyThreshold(this)
+                    for (person in DBManager.personList) {
+                        val similarity = FaceSDK.similarityCalculation(templates, person.templates)
+                        if (similarity > threshold) {
+                            toast("Already registered as ${person.name}")
+                            return@whenAvailable
                         }
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    toast("Error processing image")
+
+                    promptName { name ->
+                        dbManager.insertPerson(name, faceImage, templates)
+                        personAdapter.notifyDataSetChanged()
+                        toast("Person saved as $name")
+                    }
                 }
             }
         }
@@ -197,12 +187,69 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
+    override fun onResume() {
+        super.onResume()
+        recognized = false
+        personAdapter.notifyDataSetChanged()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            fotoapparat.start()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        fotoapparat.stop()
+        faceView.setFaceBoxes(null)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            fotoapparat.start()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SELECT_PHOTO_REQUEST_CODE && resultCode == RESULT_OK) {
+            data?.data?.let { uri ->
+                try {
+                    val bitmap = Utils.getCorrectlyOrientedImage(this, uri)
+                    val param = FaceDetectionParam().apply {
+                        check_liveness = true
+                        check_liveness_level = SettingsActivity.getLivenessLevel(this@MainActivity)
+                    }
+
+                    val faceBoxes = FaceSDK.faceDetection(bitmap, param)
+
+                    when {
+                        faceBoxes.isNullOrEmpty() -> toast(getString(R.string.no_face_detected))
+                        faceBoxes.size > 1 -> toast(getString(R.string.multiple_face_detected))
+                        else -> {
+                            val faceBox = faceBoxes[0]
+                            val faceImage = Utils.cropFace(bitmap, faceBox)
+                            val templates = FaceSDK.templateExtraction(bitmap, faceBox)
+
+                            promptName { name ->
+                                dbManager.insertPerson(name, faceImage, templates)
+                                personAdapter.notifyDataSetChanged()
+                                toast(getString(R.string.person_enrolled))
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    toast("Error processing image")
+                }
+            }
+        }
+    }
+
     inner class FaceFrameProcessor : FrameProcessor {
         override fun process(frame: Frame) {
             if (recognized) return
 
             val useBackCamera = SettingsActivity.getCameraLens(context) == CameraSelector.LENS_FACING_BACK
-            val cameraMode = if (useBackCamera) CAMERA_MODE_BACK else CAMERA_MODE_FRONT
+            val cameraMode = if (useBackCamera) 6 else 7
             val bitmap = FaceSDK.yuv2Bitmap(frame.image, frame.size.width, frame.size.height, cameraMode)
 
             val faceParam = FaceDetectionParam().apply {
@@ -234,20 +281,15 @@ class MainActivity : AppCompatActivity() {
 
                     if (highestSimilarity > SettingsActivity.getIdentifyThreshold(context)) {
                         recognized = true
-                        val faceImage = Utils.cropFace(bitmap, faceBox)
 
                         runOnUiThread {
-                            Intent(context, ResultActivity::class.java).apply {
-                                putExtra("identified_face", faceImage)
-                                putExtra("enrolled_face", bestMatch!!.face)
-                                putExtra("identified_name", bestMatch.name)
-                                putExtra("similarity", highestSimilarity)
-                                putExtra("liveness", faceBox.liveness)
-                                putExtra("yaw", faceBox.yaw)
-                                putExtra("roll", faceBox.roll)
-                                putExtra("pitch", faceBox.pitch)
-                                startActivity(this)
-                            }
+                            textViewIdentifiedName.text = "Identified: ${bestMatch!!.name}"
+
+                            Handler(mainLooper).postDelayed({
+                                textViewIdentifiedName.text = "Identified: Unknown"
+                                fotoapparat.start()
+                                recognized = false
+                            }, 3000)
                         }
                     }
                 }

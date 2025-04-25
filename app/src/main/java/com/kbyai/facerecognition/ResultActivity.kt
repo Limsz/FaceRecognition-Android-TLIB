@@ -9,7 +9,7 @@ import android.widget.TextView
 class ResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_result)
+        // setContentView(R.layout.activity_result)
 
         val identifyedFace = intent.getParcelableExtra("identified_face") as? Bitmap
         val enrolledFace = intent.getParcelableExtra("enrolled_face") as? Bitmap
