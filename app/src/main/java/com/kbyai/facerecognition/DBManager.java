@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
+import java.net.URLEncoder;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 public class DBManager extends SQLiteOpenHelper {
 
     public static ArrayList<Person> personList = new ArrayList<>();
-    private static final String SHEET_URL = "https://script.google.com/macros/s/AKfycbyIGwfo8vz0EK5A8Ic6JkSsY15dxZ9gmapl32RmKCFwLfqjHJrnSAI_0jSLmGREEoKm/exec";
+    private static final String SHEET_URL = "https://script.google.com/macros/s/AKfycbyAIh9JyOkxuccTQiACdzKZIACvMAHvMbnJnxzp6NlZbpSjdVqWULyzLpj09-teA_HW/exec";
 
     public DBManager(Context context) {
         super(context, "mydb", null, 1);
@@ -122,7 +123,9 @@ public class DBManager extends SQLiteOpenHelper {
         String encodedFace = Base64.encodeToString(faceBytes, Base64.DEFAULT);
         String encodedTemplates = Base64.encodeToString(templates, Base64.DEFAULT);
 
-        String postData = "name=" + name + "&face=" + encodedFace + "&templates=" + encodedTemplates;
+        String postData = "name=" + URLEncoder.encode(name) +
+                "&face=" + URLEncoder.encode(encodedFace) +
+                "&templates=" + URLEncoder.encode(encodedTemplates);
 
         new AsyncTask<String, Void, String>() {
             @Override
@@ -139,10 +142,26 @@ public class DBManager extends SQLiteOpenHelper {
                     os.flush();
 
                     InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                    return readStream(in);
+                    String response = readStream(in);
+
+                    // Handle successful response
+                    if (response.equals("Success")) {
+                        Log.d("DBManager", "Image successfully uploaded to Drive");
+                    }
+                    return response;
                 } catch (IOException e) {
                     e.printStackTrace();
                     return "Error sending data";
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                // Handle response here
+                if (result.startsWith("Error")) {
+                    Log.e("DBManager", "Upload failed: " + result);
+                } else {
+                    Log.i("DBManager", "Upload successful");
                 }
             }
         }.execute(postData);
