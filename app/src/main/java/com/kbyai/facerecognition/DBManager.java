@@ -11,22 +11,30 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
-import java.net.URLEncoder;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
-/** @noinspection ALL*/
 public class DBManager extends SQLiteOpenHelper {
 
     public static ArrayList<Person> personList = new ArrayList<>();
-    private static final String SHEET_URL = "https://script.google.com/macros/s/AKfycbyAIh9JyOkxuccTQiACdzKZIACvMAHvMbnJnxzp6NlZbpSjdVqWULyzLpj09-teA_HW/exec";
+    private static final String WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAIh9JyOkxuccTQiACdzKZIACvMAHvMbnJnxzp6NlZbpSjdVqWULyzLpj09-teA_HW/exec";
+
+    // Constants for better maintainability
+    private static final String TABLE_PERSON = "person";
+    private static final String COL_NAME = "name";
+    private static final String COL_FACE = "face";
+    private static final String COL_TEMPLATES = "templates";
+    private static final String TAG = "DBManager";
+    private static final int CONNECTION_TIMEOUT = 15000;
+    private static final int READ_TIMEOUT = 15000;
 
     public DBManager(Context context) {
         super(context, "mydb", null, 1);
@@ -35,171 +43,141 @@ public class DBManager extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(
-                "create table person " +
-                        "(name text, face blob, templates blob)"
+                "CREATE TABLE " + TABLE_PERSON + " (" +
+                        COL_NAME + " TEXT, " +
+                        COL_FACE + " BLOB, " +
+                        COL_TEMPLATES + " BLOB)"
         );
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS person");
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PERSON);
         onCreate(db);
     }
 
     public void insertPerson(String name, Bitmap face, byte[] templates) {
-        // Compress face image into a byte array
+        // Compress face image (use JPEG for smaller size)
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        face.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        byte[] faceJpg = byteArrayOutputStream.toByteArray();
+        face.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
+        byte[] faceBytes = byteArrayOutputStream.toByteArray();
 
-        // Encode face and templates into Base64 strings
-        String encodedFace = Base64.encodeToString(faceJpg, Base64.DEFAULT);
-        String encodedTemplates = Base64.encodeToString(templates, Base64.DEFAULT);
-
-        // Log the data to verify it's being prepared correctly
-        Log.d("DBManager", "Sending data to Google Sheet:\nName: " + name + "\nFace: " + encodedFace + "\nTemplates: " + encodedTemplates);
-
-
-        // Insert person into the local SQLite database
+        // Insert into local database
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put("name", name);
-        contentValues.put("face", faceJpg);
-        contentValues.put("templates", templates);
-        db.insert("person", null, contentValues);
+        contentValues.put(COL_NAME, name);
+        contentValues.put(COL_FACE, faceBytes);
+        contentValues.put(COL_TEMPLATES, templates);
+        db.insert(TABLE_PERSON, null, contentValues);
 
-        // Add the person to the personList
+        // Add to memory list
         personList.add(new Person(name, face, templates));
 
-        // Send to Google Sheets
-        sendDataToGoogleSheet(name, face, templates);
+        // Upload to Google Drive
+        uploadToGoogleDrive(name, face, templates);
     }
 
-
     public void deletePerson(String name) {
+        // Remove from memory list
         for (int i = 0; i < personList.size(); i++) {
             if (personList.get(i).name.equals(name)) {
                 personList.remove(i);
-                i--;
+                break;
             }
         }
 
+        // Remove from database
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("person", "name = ?", new String[]{name});
+        db.delete(TABLE_PERSON, COL_NAME + " = ?", new String[]{name});
     }
 
-    public Integer clearDB() {
+    public void clearDB() {
         personList.clear();
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("delete from person");
-        return 0;
+        db.execSQL("DELETE FROM " + TABLE_PERSON);
     }
 
     public void loadPerson() {
         personList.clear();
-
         SQLiteDatabase db = this.getReadableDatabase();
-        @SuppressLint("Recycle") Cursor res = db.rawQuery("select * from person", null);
-        res.moveToFirst();
 
-        while (!res.isAfterLast()) {
-            @SuppressLint("Range") String name = res.getString(res.getColumnIndex("name"));
-            @SuppressLint("Range") byte[] faceJpg = res.getBlob(res.getColumnIndex("face"));
-            @SuppressLint("Range") byte[] templates = res.getBlob(res.getColumnIndex("templates"));
-            Bitmap face = BitmapFactory.decodeByteArray(faceJpg, 0, faceJpg.length);
+        try (Cursor res = db.rawQuery("SELECT * FROM " + TABLE_PERSON, null)) {
+            while (res.moveToNext()) {
+                @SuppressLint("Range") String name = res.getString(res.getColumnIndex(COL_NAME));
+                @SuppressLint("Range") byte[] faceJpg = res.getBlob(res.getColumnIndex(COL_FACE));
+                @SuppressLint("Range") byte[] templates = res.getBlob(res.getColumnIndex(COL_TEMPLATES));
 
-            Person person = new Person(name, face, templates);
-            personList.add(person);
-            res.moveToNext();
+                Bitmap face = BitmapFactory.decodeByteArray(faceJpg, 0, faceJpg.length);
+                personList.add(new Person(name, face, templates));
+            }
         }
     }
 
-    // Send to Google Sheets
     @SuppressLint("StaticFieldLeak")
-    private void sendDataToGoogleSheet(String name, Bitmap face, byte[] templates) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        face.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        byte[] faceBytes = byteArrayOutputStream.toByteArray();
-        String encodedFace = Base64.encodeToString(faceBytes, Base64.DEFAULT);
-        String encodedTemplates = Base64.encodeToString(templates, Base64.DEFAULT);
-
-        String postData = "name=" + URLEncoder.encode(name) +
-                "&face=" + URLEncoder.encode(encodedFace) +
-                "&templates=" + URLEncoder.encode(encodedTemplates);
-
-        new AsyncTask<String, Void, String>() {
-            @Override
-            protected String doInBackground(String... params) {
-                try {
-                    URL url = new URL(SHEET_URL);
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("POST");
-                    urlConnection.setDoOutput(true);
-                    urlConnection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-
-                    OutputStream os = urlConnection.getOutputStream();
-                    os.write(postData.getBytes());
-                    os.flush();
-
-                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                    String response = readStream(in);
-
-                    // Handle successful response
-                    if (response.equals("Success")) {
-                        Log.d("DBManager", "Image successfully uploaded to Drive");
-                    }
-                    return response;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return "Error sending data";
-                }
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                // Handle response here
-                if (result.startsWith("Error")) {
-                    Log.e("DBManager", "Upload failed: " + result);
-                } else {
-                    Log.i("DBManager", "Upload successful");
-                }
-            }
-        }.execute(postData);
-    }
-
-    // Fetch from Google Sheets (example)
-    public void fetchDataFromGoogleSheet() {
+    private void uploadToGoogleDrive(String name, Bitmap face, byte[] templates) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... voids) {
                 try {
-                    URL url = new URL(SHEET_URL);
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod("GET");
+                    // Prepare image data with proper MIME type
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    face.compress(Bitmap.CompressFormat.JPEG, 90, byteArrayOutputStream);
+                    String encodedFace = "data:image/jpeg;base64," +
+                            Base64.encodeToString(byteArrayOutputStream.toByteArray(), Base64.NO_WRAP);
 
-                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                    return readStream(in);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return "Error fetching data";
+                    // Prepare templates
+                    String encodedTemplates = Base64.encodeToString(templates, Base64.NO_WRAP);
+
+                    // Create POST data
+                    String postData = "action=uploadFaceData" +
+                            "&name=" + URLEncoder.encode(name, "UTF-8") +
+                            "&face=" + URLEncoder.encode(encodedFace, "UTF-8") +
+                            "&templates=" + URLEncoder.encode(encodedTemplates, "UTF-8");
+
+                    // Configure connection
+                    HttpURLConnection conn = (HttpURLConnection) new URL(WEB_APP_URL).openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setDoOutput(true);
+                    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                    conn.setReadTimeout(READ_TIMEOUT);
+
+                    // Send data
+                    try (OutputStream os = conn.getOutputStream()) {
+                        os.write(postData.getBytes("UTF-8"));
+                    }
+
+                    // Handle response
+                    if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        try (InputStream in = new BufferedInputStream(conn.getInputStream())) {
+                            return readStream(in);
+                        }
+                    } else {
+                        return "Error: HTTP " + conn.getResponseCode();
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Upload error", e);
+                    return "Error: " + e.getMessage();
                 }
             }
 
             @Override
             protected void onPostExecute(String result) {
-                Log.d("GoogleSheets", "Data retrieved: " + result);
-                // TODO: Parse JSON and update personList if needed
+                if (result.contains("\"status\":\"success\"")) {
+                    Log.i(TAG, "Upload successful: " + result);
+                } else {
+                    Log.e(TAG, "Upload failed: " + result);
+                }
             }
         }.execute();
     }
 
-    // Utility: Read InputStream into String
     private String readStream(InputStream in) throws IOException {
         StringBuilder sb = new StringBuilder();
         byte[] buffer = new byte[1024];
         int len;
         while ((len = in.read(buffer)) != -1) {
-            sb.append(new String(buffer, 0, len));
+            sb.append(new String(buffer, 0, len, "UTF-8"));
         }
         return sb.toString();
     }
