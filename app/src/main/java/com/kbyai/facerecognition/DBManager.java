@@ -23,7 +23,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class DBManager extends SQLiteOpenHelper {
-
+//a
     public static ArrayList<Person> personList = new ArrayList<>();
     private static final String WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAIh9JyOkxuccTQiACdzKZIACvMAHvMbnJnxzp6NlZbpSjdVqWULyzLpj09-teA_HW/exec";
 
