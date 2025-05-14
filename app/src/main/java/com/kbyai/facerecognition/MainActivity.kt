@@ -20,7 +20,6 @@ import io.fotoapparat.Fotoapparat
 import io.fotoapparat.parameter.Resolution
 import io.fotoapparat.preview.Frame
 import io.fotoapparat.preview.FrameProcessor
-
 import io.fotoapparat.selector.front
 import io.fotoapparat.selector.back
 import io.fotoapparat.view.CameraView
@@ -41,11 +40,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var personAdapter: PersonAdapter
     private lateinit var textWarning: TextView
     private lateinit var textViewIdentifiedName: TextView
-    private lateinit var textTimestamp: TextView
 
 
     @Volatile private var recognized = false
     private var lastIdentifiedName: String? = null
+    private var isBackCamera = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +56,8 @@ class MainActivity : AppCompatActivity() {
         textWarning = findViewById(R.id.textWarning)
         val listView: ListView = findViewById(R.id.listPerson)
         textViewIdentifiedName = findViewById(R.id.textViewIdentifiedName)
-        textTimestamp = findViewById(R.id.textTimestamp)
+
+
 
 
         var ret = FaceSDK.setActivation("S18+rOL1H3BXjAWGP7gEdgbJVotQ4g1o+YMcZruzEaKWFUQJHB2P1ylgw1FAfi+enDQA3nE4E9h6\n" +
@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity() {
         if (ret == FaceSDK.SDK_SUCCESS) ret = FaceSDK.init(assets)
         if (ret != FaceSDK.SDK_SUCCESS) showSdkError(ret)
 
-
         dbManager = DBManager(this)
         dbManager.loadPerson()
 
@@ -77,18 +76,6 @@ class MainActivity : AppCompatActivity() {
 
         setupCamera()
 
-        findViewById<ImageButton>(R.id.buttonEnroll).setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
-            startActivityForResult(Intent.createChooser(intent, getString(R.string.select_picture)), SELECT_PHOTO_REQUEST_CODE)
-        }
-
-        findViewById<ImageButton>(R.id.buttonSetting).setOnClickListener {
-            // Open the SettingsActivity or show a dialog
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
-        }
-
-
         findViewById<ImageButton>(R.id.buttonAbout).setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
         }
@@ -96,13 +83,26 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.buttonCapture).setOnClickListener {
             captureAndSaveFace()
         }
+
+        val buttonSwitchCamera = findViewById<ImageButton>(R.id.buttonSwitchCamera)
+        buttonSwitchCamera.setOnClickListener {
+            isBackCamera = !isBackCamera
+            fotoapparat.stop()
+            fotoapparat = Fotoapparat.with(this)
+                .into(cameraView)
+                .lensPosition(if (isBackCamera) back() else front())
+                .frameProcessor(FaceFrameProcessor())
+                .previewResolution { Resolution(1280, 720) }
+                .build()
+            fotoapparat.start()
+        }
     }
 
     private fun setupCamera() {
-        val useBackCamera = SettingsActivity.getCameraLens(context) == CameraSelector.LENS_FACING_BACK
+        isBackCamera = SettingsActivity.getCameraLens(context) == CameraSelector.LENS_FACING_BACK
         fotoapparat = Fotoapparat.with(this)
             .into(cameraView)
-            .lensPosition(if (useBackCamera) back() else front())
+            .lensPosition(if (isBackCamera) back() else front())
             .frameProcessor(FaceFrameProcessor())
             .previewResolution { Resolution(1280, 720) }
             .build()
@@ -122,10 +122,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             var bitmap = photo.bitmap
-
-            // Apply rotation to tilt the image to the right
             val matrix = android.graphics.Matrix()
-            matrix.postRotate(240f)  // Rotate by 90 degrees (right tilt)
+            matrix.postRotate(240f)
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 
             val param = FaceDetectionParam().apply {
@@ -135,29 +133,31 @@ class MainActivity : AppCompatActivity() {
 
             val faceBoxes = FaceSDK.faceDetection(bitmap, param)
 
-            when {
-                faceBoxes.isNullOrEmpty() -> toast(getString(R.string.no_face_detected))
-                faceBoxes.size > 1 -> toast(getString(R.string.multiple_face_detected))
-                else -> {
-                    val faceBox = faceBoxes[0]
-                    val faceImage = Utils.cropFace(bitmap, faceBox)
-                    val templates = FaceSDK.templateExtraction(bitmap, faceBox)
+            if (faceBoxes.isNullOrEmpty()) {
+                toast(getString(R.string.no_face_detected))
+            } else {
+                val faceBox = faceBoxes[0]
+                val faceImage = Utils.cropFace(bitmap, faceBox)
+                val templates = FaceSDK.templateExtraction(bitmap, faceBox)
 
-                    val threshold = SettingsActivity.getIdentifyThreshold(this)
-                    for (person in DBManager.personList) {
-                        val similarity = FaceSDK.similarityCalculation(templates, person.templates)
-                        if (similarity > threshold) {
-                            toast("Already registered as ${person.name}")
-                            return@whenAvailable
+                // Check liveness before showing alert
+                if (faceBox.liveness < SettingsActivity.getLivenessThreshold(this)) {
+                    toast("Spoof or fake face detected!")
+                    return@whenAvailable
+                }
+
+                AlertDialog.Builder(this)
+                    .setTitle("Face Capture")
+                    .setMessage("Your face will be stored in the database. Do you want to proceed?")
+                    .setPositiveButton("Yes") { _, _ ->
+                        promptName { name ->
+                            dbManager.insertPerson(name, faceImage, templates)
+                            personAdapter.notifyDataSetChanged()
+                            toast("Person saved as $name")
                         }
                     }
-
-                    promptName { name ->
-                        dbManager.insertPerson(name, faceImage, templates)
-                        personAdapter.notifyDataSetChanged()
-                        toast("Person saved as $name")
-                    }
-                }
+                    .setNegativeButton("No", null)
+                    .show()
             }
         }
     }
@@ -290,12 +290,10 @@ class MainActivity : AppCompatActivity() {
                         runOnUiThread {
                             textViewIdentifiedName.text = "Identified: ${bestMatch!!.name}"
 
-                            textTimestamp.text = timestamp
-                            textTimestamp.visibility = View.VISIBLE
 
                             Handler(mainLooper).postDelayed({
-                                textViewIdentifiedName.text = "Identified: Unknown"
-                                textTimestamp.text = "0000-00-00 00:00:00 AM/PM"
+                                textViewIdentifiedName.text = "Identified as:"
+                                
                                 fotoapparat.start()
                                 recognized = false
                             }, 3000)
@@ -306,4 +304,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-

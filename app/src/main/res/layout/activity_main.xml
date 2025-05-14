@@ -41,19 +41,18 @@
         app:layout_constraintVertical_bias="0.123" />
 
     <ImageButton
-        android:id="@+id/buttonSetting"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
-        android:contentDescription="Settings"
-        android:src="@drawable/ic_settings"
-        android:scaleType="fitCenter"
-        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/buttonSwitchCamera"
+        android:layout_width="62dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Switch Camera"
+        android:scaleType="centerInside"
+        android:src="@drawable/switchcam"
         app:layout_constraintEnd_toEndOf="parent"
-        android:background="#4293D3"
-        android:layout_margin="16dp"
-        android:tint="@android:color/white" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Overlapping White Rounded Content Panel -->
     <LinearLayout
         android:id="@+id/whitePanel"
         android:layout_width="0dp"
@@ -93,40 +92,37 @@
             android:layout_marginTop="16dp"
             android:fontFamily="@font/alata"
             android:gravity="center"
-            android:text="Identity: Unknown"
+            android:text="Identified as:"
             android:textColor="#1C1B1F"
             android:textSize="16sp" />
-        <TextView
-            android:id="@+id/textTimestamp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/alata"
-            android:gravity="center"
-            android:textColor="#1C1B1F"
-            android:textSize="16sp"
-            android:text="0000-00-00 00:00:00 AM/PM" />
+
+
 
         <FrameLayout
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="245dp"
+            android:layout_height="234dp"
             android:layout_gravity="center"
-            android:layout_marginTop="8dp"
             android:background="@drawable/rounded_camera_preview">
 
             <io.fotoapparat.view.CameraView
                 android:id="@+id/preview"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
-                <com.kbyai.facerecognition.FaceView
-                    android:id="@+id/faceView"
-                    android:layout_width="280dp"
-                    android:layout_height="282dp"
-                    android:layout_gravity="center"
-                    android:translationZ="1dp" />
-            </io.fotoapparat.view.CameraView>
+            <com.kbyai.facerecognition.FaceView
+                android:id="@+id/faceView"
+                android:layout_width="229dp"
+                android:layout_height="217dp"
+                android:layout_gravity="center"
+                android:translationZ="1dp" />
+
         </FrameLayout>
+
 
         <!-- SDK Info Card -->
         <androidx.cardview.widget.CardView
@@ -147,35 +143,6 @@
             android:gravity="center"
             android:orientation="horizontal"
             android:weightSum="3">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageButton
-                    android:id="@+id/buttonEnroll"
-                    android:layout_width="51dp"
-                    android:layout_height="46dp"
-                    android:layout_margin="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="@android:color/white"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/upload1" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:fontFamily="@font/alata"
-                    android:text="Upload Photo"
-                    android:textAlignment="center"
-                    android:textColor="#0061AE"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"

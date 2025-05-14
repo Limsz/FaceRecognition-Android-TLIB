@@ -24,14 +24,6 @@ class AboutActivity : AppCompatActivity() {
         listView.adapter = personAdapter
 
         // You can still keep your existing contact options functionality if needed
-        findViewById<TextView>(R.id.txtMail).setOnClickListener {
-            val intent = Intent(Intent.ACTION_SEND)
-            intent.type = "plain/text"
-            intent.putExtra(Intent.EXTRA_EMAIL, arrayOf("contact@kby-ai.com"))
-            intent.putExtra(Intent.EXTRA_SUBJECT, "License Request")
-            intent.putExtra(Intent.EXTRA_TEXT, "")
-            startActivity(Intent.createChooser(intent, ""))
-        }
 
         // Other contact methods (WhatsApp, Telegram, etc.) can remain the same
     }

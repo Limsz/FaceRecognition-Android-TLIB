@@ -1,59 +1,16 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory
-        app:icon="@drawable/ic_camera"
-        app:title="@string/camera"
-        >
+    <!-- Camera Lens Preference -->
+    <ListPreference
+        android:layout_width="wrap_content"
+        android:defaultValue="front"
+        android:entries="@array/camera_lens"
+        android:entryValues="@array/camera_lens"
+        android:key="camera_lens"
+        android:summary="Select the camera lens"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textSize="24sp"
+        android:title="Camera Lens" />
 
-        <ListPreference
-            app:defaultValue="front"
-            app:entries="@array/camera_lens"
-            app:entryValues="@array/camera_lens_values"
-            app:key="camera_lens"
-            app:title="@string/camera_lens"
-            app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        app:icon="@drawable/ic_threshold"
-        app:title="@string/thresholds">
-
-        <EditTextPreference
-            app:defaultValue="0.7"
-            app:key="liveness_threshold"
-            app:title="@string/liveness_threshold"
-            app:useSimpleSummaryProvider="true"
-            />
-
-        <ListPreference
-            app:defaultValue="0"
-            app:entries="@array/liveness_level"
-            app:entryValues="@array/liveness_level_values"
-            app:key="liveness_level"
-            app:title="@string/liveness_level"
-            app:useSimpleSummaryProvider="true" />
-
-        <EditTextPreference
-            app:defaultValue="0.8"
-            app:key="identify_threshold"
-            app:title="@string/identify_threshold"
-            app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        app:icon="@drawable/ic_reset"
-        app:title="@string/reset">
-
-        <Preference
-            app:key="restore_default_settings"
-            app:title="@string/restore_default_settings" />
-
-        <Preference
-            app:key="clear_all_person"
-            app:title="@string/clear_all_person" />
-
-    </PreferenceCategory>
 
 </PreferenceScreen>
