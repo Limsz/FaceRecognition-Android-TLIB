@@ -26,7 +26,7 @@ public class DBManager extends SQLiteOpenHelper {
 //a
     //a
     public static ArrayList<Person> personList = new ArrayList<>();
-    private static final String WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAIh9JyOkxuccTQiACdzKZIACvMAHvMbnJnxzp6NlZbpSjdVqWULyzLpj09-teA_HW/exec";
+    private static final String WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwe381E2BpLjWp3Ee9XrMlzTR82dsXk8AgG5BSjT6Cdb9KiV6cmnE5whyU6KPMW3X2G/exec";
 
     // Constants for better maintainability
     private static final String TABLE_PERSON = "person";

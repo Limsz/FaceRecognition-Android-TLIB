@@ -140,24 +140,45 @@ class MainActivity : AppCompatActivity() {
                 val faceImage = Utils.cropFace(bitmap, faceBox)
                 val templates = FaceSDK.templateExtraction(bitmap, faceBox)
 
-                // Check liveness before showing alert
                 if (faceBox.liveness < SettingsActivity.getLivenessThreshold(this)) {
                     toast("Spoof or fake face detected!")
                     return@whenAvailable
                 }
 
-                AlertDialog.Builder(this)
-                    .setTitle("Face Capture")
-                    .setMessage("Your face will be stored in the database. Do you want to proceed?")
-                    .setPositiveButton("Yes") { _, _ ->
-                        promptName { name ->
-                            dbManager.insertPerson(name, faceImage, templates)
-                            personAdapter.notifyDataSetChanged()
-                            toast("Person saved as $name")
-                        }
+                // Check if face already registered by comparing similarity
+                var isRegistered = false
+                var matchedName = ""
+                val similarityThreshold = SettingsActivity.getIdentifyThreshold(this)
+
+                for (person in DBManager.personList) {
+                    val similarity = FaceSDK.similarityCalculation(templates, person.templates)
+                    if (similarity > similarityThreshold) {
+                        isRegistered = true
+                        matchedName = person.name
+                        break
                     }
-                    .setNegativeButton("No", null)
-                    .show()
+                }
+
+                if (isRegistered) {
+                    AlertDialog.Builder(this)
+                        .setTitle("Face Already Registered")
+                        .setMessage("This face is already registered as \"$matchedName\".")
+                        .setPositiveButton("OK", null)
+                        .show()
+                } else {
+                    AlertDialog.Builder(this)
+                        .setTitle("Face Capture")
+                        .setMessage("Your face will be stored in the database. Do you want to proceed?")
+                        .setPositiveButton("Yes") { _, _ ->
+                            promptName { name ->
+                                dbManager.insertPerson(name, faceImage, templates)
+                                personAdapter.notifyDataSetChanged()
+                                toast("Person saved as $name")
+                            }
+                        }
+                        .setNegativeButton("No", null)
+                        .show()
+                }
             }
         }
     }
